@@ -1,0 +1,55 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Create .env file
+      run: |
+        touch .env
+        echo "${{ secrets.PROD_ENV_FILE }}" > .env
+    
+    - name: Install PM2 and restart application
+      run: |
+        npm install pm2@latest -g
+        pm2 restart Backend || pm2 start index.js --name Backend
+    
+    - name: Check PM2 status
+      run: pm2 list
+    
+    - name: Health check
+      run: |
+        sleep 10  # Give the application some time to start up
+        response=$(curl -sS http://localhost:7000/health || echo "Failed to connect")
+        if [[ $response == *"OK"* ]]; then
+          echo "Application is healthy"
+        else
+          echo "Application health check failed"
+          echo "Response: $response"
+          exit 1
+        fi
+
+    - name: Cleanup
+      if: always()
+      run: |
+        pm2 save
