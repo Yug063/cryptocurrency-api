@@ -1,8 +1,9 @@
-const express = require('express');
-const { getPriceDeviation } = require('../controllers/deviation.controller');
+import express from "express";
+import { getPriceDeviation } from "../controllers/deviation.controller.js";
+
 const router = express.Router();
 
 // Route to get the standard deviation of crypto prices
 router.get("/", getPriceDeviation);
 
-module.exports = router;
+export default router;

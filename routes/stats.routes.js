@@ -1,8 +1,9 @@
-const express = require('express');
-const { getCryptoStats } = require('../controllers/stats.controller');
+import express from "express";
+import { getCryptoStats } from "../controllers/stats.controller.js";
+
 const router = express.Router();
 
 // Route to get the latest cryptocurrency stats
 router.get("/", getCryptoStats);
 
-module.exports = router;
+export default router;
